@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,21 +32,39 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
   taskToEdit,
 }) => {
   const { createTask, updateTask } = useKanbanStore();
-  const [title, setTitle] = useState(
-    taskToEdit ? taskToEdit.title.split(" ").slice(1).join(" ") : ""
-  );
-  const [description, setDescription] = useState(taskToEdit?.description || "");
-  const [priority, setPriority] = useState<TaskPriority>(
-    taskToEdit?.priority || TaskPriority.MEDIUM
-  );
-  const [dueDate, setDueDate] = useState(
-    taskToEdit?.dueDate
-      ? new Date(taskToEdit.dueDate).toISOString().split("T")[0]
-      : ""
-  );
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<TaskPriority>(TaskPriority.MEDIUM);
+  const [dueDate, setDueDate] = useState("");
   const [errors, setErrors] = useState<{ title?: string }>({});
 
   const isEditMode = Boolean(taskToEdit);
+
+  // Update form values when taskToEdit or open changes
+  useEffect(() => {
+    if (open) {
+      if (taskToEdit) {
+        // Extract the task title without the task code (e.g., "TASK-123")
+        const taskTitle = taskToEdit.title.split(" ");
+        taskTitle.shift(); // Remove the first element (TASK-XXX)
+        setTitle(taskTitle.join(" "));
+        setDescription(taskToEdit.description || "");
+        setPriority(taskToEdit.priority);
+        setDueDate(
+          taskToEdit.dueDate
+            ? new Date(taskToEdit.dueDate).toISOString().split("T")[0]
+            : ""
+        );
+      } else {
+        // Reset form for create mode
+        setTitle("");
+        setDescription("");
+        setPriority(TaskPriority.MEDIUM);
+        setDueDate("");
+      }
+      setErrors({});
+    }
+  }, [taskToEdit, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,19 +91,8 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
       );
     }
 
-    // Reset and close
-    resetForm();
+    // Close the dialog
     onOpenChange(false);
-  };
-
-  const resetForm = () => {
-    if (!isEditMode) {
-      setTitle("");
-      setDescription("");
-      setPriority(TaskPriority.MEDIUM);
-      setDueDate("");
-    }
-    setErrors({});
   };
 
   return (
@@ -179,7 +186,6 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
               type="button"
               variant="outline"
               onClick={() => {
-                resetForm();
                 onOpenChange(false);
               }}
             >
