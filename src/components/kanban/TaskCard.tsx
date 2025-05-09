@@ -1,3 +1,11 @@
+/**
+ * TaskCard Component
+ *
+ * Displays a single task card that can be dragged and dropped
+ * between columns. Shows task details including title, description,
+ * priority, and due date.
+ */
+
 import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -19,7 +27,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Helper to format dates
+/**
+ * Formats a date for display
+ * @param date The date to format
+ * @returns Formatted date string (e.g. "May 9")
+ */
 const formatDate = (date: Date | undefined) => {
   if (!date) return "";
   return new Intl.DateTimeFormat("en-US", {
@@ -28,7 +40,11 @@ const formatDate = (date: Date | undefined) => {
   }).format(new Date(date));
 };
 
-// Helper to get priority badge styles
+/**
+ * Returns appropriate CSS classes for priority badges
+ * @param priority The task priority level
+ * @returns CSS class string for styling the priority badge
+ */
 const getPriorityBadge = (priority: string) => {
   switch (priority) {
     case "high":
