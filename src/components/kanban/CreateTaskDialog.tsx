@@ -1,3 +1,9 @@
+/**
+ * CreateTaskDialog Component
+ *
+ * A modal dialog for creating new tasks or editing existing ones.
+ * Handles form validation and submission.
+ */
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -20,27 +26,47 @@ import { useKanbanStore } from "@/store/useKanbanStore";
 import { TaskPriority } from "@/types";
 import type { Task } from "@/types";
 
+/**
+ * Props for the CreateTaskDialog component
+ */
 interface CreateTaskDialogProps {
+  /** Whether the dialog is currently open */
   open: boolean;
+  /** Callback for when the dialog open state changes */
   onOpenChange: (open: boolean) => void;
+  /** Optional task to edit (undefined for create mode) */
   taskToEdit?: Task;
 }
 
+/**
+ * CreateTaskDialog Component
+ *
+ * Used for both creating new tasks and editing existing ones.
+ */
 const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
   open,
   onOpenChange,
   taskToEdit,
 }) => {
+  // Access task-related actions from the store
   const { createTask, updateTask } = useKanbanStore();
+
+  // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>(TaskPriority.MEDIUM);
   const [dueDate, setDueDate] = useState("");
   const [errors, setErrors] = useState<{ title?: string }>({});
 
+  // Determine if we're in edit or create mode
   const isEditMode = Boolean(taskToEdit);
 
-  // Update form values when taskToEdit or open changes
+  /**
+   * Update form values when taskToEdit or open state changes
+   *
+   * This ensures the form is properly initialized with the current task data when editing,
+   * or reset when creating a new task.
+   */
   useEffect(() => {
     if (open) {
       if (taskToEdit) {

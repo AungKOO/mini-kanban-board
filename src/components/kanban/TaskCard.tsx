@@ -58,23 +58,39 @@ const getPriorityBadge = (priority: string) => {
   }
 };
 
+/**
+ * Props for the TaskCard component
+ */
 interface TaskCardProps {
+  /** The task data to display */
   task: Task;
+  /** Callback for when the edit button is clicked */
   onEdit: (task: Task) => void;
 }
 
+/**
+ * TaskCard Component
+ *
+ * Displays a single task and enables drag-and-drop functionality.
+ * Shows task details and provides edit and delete actions.
+ */
 const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
   const { deleteTask } = useKanbanStore();
+  // Check if the task is in the "Done" status to apply special styling
   const isDone = task.status === TaskStatus.DONE;
 
-  // Set up sortable (draggable) behavior
+  /**
+   * Set up sortable (draggable) behavior using dnd-kit
+   *
+   * This attaches all the necessary props and handlers for drag and drop
+   */
   const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
+    attributes, // Attributes to spread on the draggable element
+    listeners, // Event listeners for drag interactions
+    setNodeRef, // Ref to attach to the draggable element
+    transform, // Current transform value during drag
+    transition, // Transition to apply during drag
+    isDragging, // Whether the item is currently being dragged
   } = useSortable({
     id: task.id,
     data: {
@@ -83,14 +99,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
     },
   });
 
+  // CSS styles for drag transform and transition
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
-  // Extract task code and title
-  const taskCode = task.title.split(" ")[0];
-  const taskTitle = task.title.substring(taskCode.length + 1);
+  // Extract task code (e.g., "TASK-123") and title from the complete title string
+  const taskCode = task.title.split(" ")[0]; // First part is the code
+  const taskTitle = task.title.substring(taskCode.length + 1); // Rest is the title
 
   return (
     <Card
@@ -115,6 +132,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
             {taskTitle}
           </h3>
         </div>
+        {/* Actions dropdown menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -123,10 +141,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {/* Edit action */}
             <DropdownMenuItem onClick={() => onEdit(task)}>
               <Pencil className="mr-2 size-4" />
               Edit
             </DropdownMenuItem>
+            {/* Delete action with warning color */}
             <DropdownMenuItem
               onClick={() => deleteTask(task.id)}
               className="text-red-600 dark:text-red-400"
@@ -137,6 +157,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
           </DropdownMenuContent>
         </DropdownMenu>
       </CardHeader>
+      {/* Task description (if present) */}
       <CardContent className="p-3">
         {task.description && (
           <p
@@ -148,7 +169,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
           </p>
         )}
       </CardContent>
+
+      {/* Card footer with priority badge and due date */}
       <CardFooter className="px-3 py-2 flex justify-between items-center">
+        {/* Priority badge with color-coding */}
         <span
           className={`text-xs px-2 py-1 rounded-full ${getPriorityBadge(
             task.priority
@@ -156,6 +180,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
         >
           {task.priority}
         </span>
+
+        {/* Due date (if present) */}
         {task.dueDate && (
           <span className="text-xs text-gray-500 dark:text-gray-400">
             Due {formatDate(task.dueDate)}
