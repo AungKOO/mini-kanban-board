@@ -1,0 +1,77 @@
+import React from "react";
+import { useDroppable } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import type { Column as ColumnType, Task } from "@/types";
+import TaskCard from "./TaskCard";
+import { cn } from "@/lib/utils";
+
+interface ColumnProps {
+  column: ColumnType;
+  onEditTask: (task: Task) => void;
+}
+
+const Column: React.FC<ColumnProps> = ({ column, onEditTask }) => {
+  // Set up droppable functionality
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.status,
+    data: {
+      type: "Column",
+      column,
+    },
+  });
+
+  // Sort tasks by updatedAt or createdAt (newest first)
+  // Ensure column.tasks is an array before attempting to sort
+  const tasks = Array.isArray(column.tasks) ? column.tasks : [];
+  const sortedTasks = [...tasks].sort((a, b) => {
+    const dateA = a.updatedAt || a.createdAt;
+    const dateB = b.updatedAt || b.createdAt;
+    return new Date(dateB).getTime() - new Date(dateA).getTime();
+  });
+
+  return (
+    <div className="w-80 flex-shrink-0 flex flex-col">
+      {/* Column header */}
+      <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-t-md">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-gray-700 dark:text-gray-200">
+            {column.title}
+          </h2>
+          <span className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full text-xs">
+            {column.tasks.length}
+          </span>
+        </div>
+      </div>
+
+      {/* Task list container */}
+      <div
+        ref={setNodeRef}
+        className={cn(
+          "flex-grow min-h-[200px] p-2 bg-gray-50 dark:bg-gray-800/50 rounded-b-md",
+          isOver && "bg-blue-50 dark:bg-blue-950/30"
+        )}
+      >
+        <SortableContext
+          items={sortedTasks.map((task) => task.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {sortedTasks.map((task) => (
+            <TaskCard key={task.id} task={task} onEdit={onEditTask} />
+          ))}
+        </SortableContext>
+
+        {/* Empty state */}
+        {(!column.tasks || column.tasks.length === 0) && (
+          <div className="text-center p-4 text-gray-400 dark:text-gray-500 text-sm italic">
+            No tasks in this column
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Column;

@@ -202,6 +202,14 @@ export const useKanbanStore = create<KanbanState>()(
       name: "kanban-storage",
       // Optional: define which parts of the state should be stored
       partialize: (state) => ({ board: state.board }),
+      // Handle potential issues with stored data
+      onRehydrateStorage: () => (state) => {
+        // Check if the stored data is valid
+        if (!state || !state.board || !Array.isArray(state.board.columns)) {
+          console.warn("Invalid stored data, using initial state instead");
+          return { board: initialBoard };
+        }
+      },
     }
   )
 );

@@ -1,18 +1,14 @@
-import './App.css'
-import { Button } from './components/ui/button'
+import "./App.css";
+import KanbanBoard from "./components/kanban/KanbanBoard";
 
 function App() {
-
   return (
-    <>
-     <h1 className='text-center text-3xl font-bold text-yellow-500'>Hello world</h1>
-     <div>
-       <Button>
-        click me
-       </Button>
-     </div>
-    </>
-  )
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4">
+      <div className="container mx-auto h-full">
+        <KanbanBoard />
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
