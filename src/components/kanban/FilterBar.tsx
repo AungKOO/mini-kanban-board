@@ -2,7 +2,6 @@
  * FilterBar Component
  *
  * Provides UI for filtering tasks in the Kanban board by status or priority.
- * Uses shadcn UI components for consistent styling.
  */
 import React from "react";
 import { Button } from "@/components/ui/button";
@@ -43,7 +42,7 @@ const ANY_PRIORITY = "any_priority";
 /**
  * Filter bar component for filtering tasks
  */
-const FilterBar: React.FC = () => {
+const FilterBar: React.FC = React.memo(() => {
   const {
     filterByStatus,
     filterByPriority,
@@ -151,6 +150,6 @@ const FilterBar: React.FC = () => {
       )}
     </div>
   );
-};
+});
 
 export default FilterBar;
