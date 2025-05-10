@@ -25,9 +25,10 @@ import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 
 const KanbanBoard: React.FC = () => {
   const { board, moveTask, updateTask } = useKanbanStore();
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
+  const [activeTask, setActiveTask] = useState<Task | null>(null); // For drag overlay
+  const [createDialogOpen, setCreateDialogOpen] = useState(false); // Controls dialog visibility
+  const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined); // For edit mode
+  // Tracks which column a new task should be created in (when using column-specific "+" button)
   const [currentColumnStatus, setCurrentColumnStatus] = useState<string>(
     TaskStatus.TODO
   );
@@ -137,18 +138,24 @@ const KanbanBoard: React.FC = () => {
 
     setActiveTask(null);
   };
-
+  /**
+   * Opens the edit dialog for an existing task
+   * @param task - The task to edit
+   */
   const handleEditTask = (task: Task) => {
     setTaskToEdit(task);
     setCreateDialogOpen(true);
   };
 
+  /**
+   * Opens the create task dialog for a specific column
+   * This is triggered when clicking the "+" button in a column header
+   * @param columnStatus - The status/column where the new task should be created
+   */
   const handleCreateTaskInColumn = (columnStatus: string) => {
-    setTaskToEdit(undefined);
-    setCreateDialogOpen(true);
-    // Store the column status where the task should be created
-    // This will be passed to CreateTaskDialog
-    setCurrentColumnStatus(columnStatus);
+    setTaskToEdit(undefined); // Not in edit mode
+    setCurrentColumnStatus(columnStatus); // Set the target column
+    setCreateDialogOpen(true); // Open the dialog
   };
 
   // Function to clear localStorage and reload
@@ -167,11 +174,12 @@ const KanbanBoard: React.FC = () => {
               Reset Board Data
             </Button>
           )}
+          {/* Main "Add Task" button - creates tasks in the To Do column by default */}
           <Button
             onClick={() => {
-              setTaskToEdit(undefined);
-              setCurrentColumnStatus(TaskStatus.TODO);
-              setCreateDialogOpen(true);
+              setTaskToEdit(undefined); // Not editing an existing task
+              setCurrentColumnStatus(TaskStatus.TODO); // Default to TODO column
+              setCreateDialogOpen(true); // Open the task creation dialog
             }}
           >
             <Plus className="mr-1" /> Add Task
@@ -194,7 +202,7 @@ const KanbanBoard: React.FC = () => {
                   key={column.id}
                   column={column}
                   onEditTask={handleEditTask}
-                  onCreateTask={handleCreateTaskInColumn}
+                  onCreateTask={handleCreateTaskInColumn} // Enables "+" button in column header
                 />
               ))
             ) : (

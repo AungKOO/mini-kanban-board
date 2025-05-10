@@ -4,6 +4,10 @@ export const TaskPriority = {
   HIGH: "high",
 } as const;
 
+/**
+ * Task status options representing the different columns on the Kanban board
+ * This also determines task movement between columns when status is updated
+ */
 export const TaskStatus = {
   BACKLOG: "backlog",
   TODO: "todo",
@@ -11,7 +15,7 @@ export const TaskStatus = {
   DONE: "done",
 } as const;
 
-// Type variants (optional):
+// Type variants using TypeScript's keyof and typeof operators:
 export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority];
 export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
 

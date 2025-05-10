@@ -28,15 +28,29 @@ import type { Task } from "@/types";
 
 /**
  * Props for the CreateTaskDialog component
+ *
+ * This component serves two purposes:
+ * 1. Create new tasks - with optional initialColumnStatus to specify the column
+ * 2. Edit existing tasks - with ability to change status and move between columns
  */
 interface CreateTaskDialogProps {
   /** Whether the dialog is currently open */
   open: boolean;
+
   /** Callback for when the dialog open state changes */
   onOpenChange: (open: boolean) => void;
-  /** Optional task to edit (undefined for create mode) */
+
+  /**
+   * Optional task to edit (undefined for create mode)
+   * When provided, puts the dialog in "edit mode" with task data populated
+   */
   taskToEdit?: Task;
-  /** Optional initial column status for new tasks */
+
+  /**
+   * Optional initial column status for new tasks
+   * Determines which column a new task will be placed in
+   * Useful when adding a task directly to a specific column
+   */
   initialColumnStatus?: string;
 }
 
@@ -66,20 +80,29 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
   const isEditMode = Boolean(taskToEdit);
 
   /**
-   * Update form values when taskToEdit or open state changes
+   * Update form values when the dialog opens or inputs change
    *
-   * This ensures the form is properly initialized with the current task data when editing,
-   * or reset when creating a new task.
+   * This effect handles two main scenarios:
+   * 1. Edit mode - Populates form with existing task data (including its status/column)
+   * 2. Create mode - Initializes a blank form with default values and the specified column status
+   *
+   * The effect runs when:
+   * - Dialog opens/closes (open changes)
+   * - Task to edit changes (switching between tasks or edit/create modes)
+   * - initialColumnStatus changes (when creating tasks from different columns)
    */
   useEffect(() => {
     if (open) {
       if (taskToEdit) {
+        // EDIT MODE: Populate form with existing task data
+
         // Extract the task title without the task code (e.g., "TASK-123")
         const taskTitle = taskToEdit.title.split(" ");
         taskTitle.shift(); // Remove the first element (TASK-XXX)
+
         setTitle(taskTitle.join(" "));
         setDescription(taskToEdit.description || "");
-        setStatus(taskToEdit.status);
+        setStatus(taskToEdit.status); // Set status to task's current column
         setPriority(taskToEdit.priority);
         setDueDate(
           taskToEdit.dueDate
@@ -87,10 +110,11 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
             : ""
         );
       } else {
-        // Reset form for create mode
+        // CREATE MODE: Reset form with default values
+
         setTitle("");
         setDescription("");
-        setStatus(initialColumnStatus || TaskStatus.TODO);
+        setStatus(initialColumnStatus || TaskStatus.TODO); // Use specified column or default to TODO
         setPriority(TaskPriority.MEDIUM);
         setDueDate("");
       }
@@ -98,6 +122,13 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
     }
   }, [taskToEdit, open, initialColumnStatus]);
 
+  /**
+   * Handles form submission for both creating and editing tasks
+   * In edit mode: Updates an existing task (preserves task code)
+   * In create mode: Creates a new task in the specified column
+   *
+   * @param e - The form submit event
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -108,18 +139,20 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
     }
 
     if (isEditMode && taskToEdit) {
+      // Update existing task, preserving the task code prefix
       updateTask(taskToEdit.id, {
-        title: `${taskToEdit.title.split(" ")[0]} ${title}`,
+        title: `${taskToEdit.title.split(" ")[0]} ${title}`, // Keep the task code (TASK-XXX)
         description: description || undefined,
-        status: status as TaskStatus,
+        status: status as TaskStatus, // This will move the task to the proper column
         priority,
         dueDate: dueDate ? new Date(dueDate) : undefined,
       });
     } else {
+      // Create a new task in the specified column (status)
       createTask(
         title,
         description || undefined,
-        status as TaskStatus,
+        status as TaskStatus, // Determines which column the task appears in
         priority,
         dueDate ? new Date(dueDate) : undefined
       );
@@ -178,6 +211,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
             />
           </div>
 
+          {/* Status dropdown - determines which column the task will appear in */}
           <div className="space-y-2">
             <label
               htmlFor="status"

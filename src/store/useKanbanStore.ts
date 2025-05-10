@@ -20,9 +20,10 @@ interface KanbanState {
   board: Board;
 
   /**
-   * Creates a new task in the "To Do" column
+   * Creates a new task in the specified column
    * @param title - The title of the task
    * @param description - Optional description of the task
+   * @param status - Task status/column (defaults to TODO)
    * @param priority - Task priority level (defaults to MEDIUM)
    * @param dueDate - Optional due date for the task
    */
@@ -35,9 +36,10 @@ interface KanbanState {
   ) => void;
 
   /**
-   * Updates an existing task
+   * Updates an existing task and moves it between columns if status changes
    * @param taskId - ID of the task to update
    * @param updatedTask - Partial task object with fields to update
+   * @remarks If the status field is updated, the task will be moved to the appropriate column
    */
   updateTask: (taskId: string, updatedTask: Partial<Task>) => void;
 
@@ -95,10 +97,19 @@ const initialBoard: Board = {
 export const useKanbanStore = create<KanbanState>()(
   persist(
     (set) => ({
+      // ===== STATE =====
       board: initialBoard,
+
+      // ===== ACTIONS =====
 
       /**
        * Creates a new task and adds it to the specified column based on status
+       *
+       * @param title - Task title (will be prefixed with a generated task code)
+       * @param description - Optional task description
+       * @param status - Which column to place the task in (default: TODO)
+       * @param priority - Task priority level (default: MEDIUM)
+       * @param dueDate - Optional due date for the task
        */
       createTask: (
         title,
@@ -141,7 +152,15 @@ export const useKanbanStore = create<KanbanState>()(
       },
 
       /**
-       * Updates an existing task's properties
+       * Updates an existing task's properties and moves it between columns if status changes
+       *
+       * This function handles both simple property updates and column movements when the status
+       * field is changed. It works in two modes:
+       * 1. If status is unchanged: Update the task properties in its current column
+       * 2. If status is changed: Move the task to the appropriate column with its updated properties
+       *
+       * @param taskId - The ID of the task to update
+       * @param updatedTask - Object containing the fields to update
        */
       updateTask: (taskId, updatedTask) => {
         set((state) => {
@@ -161,16 +180,14 @@ export const useKanbanStore = create<KanbanState>()(
           // If task not found, return state unchanged
           if (!currentTask || sourceColumnIndex === -1) {
             return state;
-          }
-
-          // Step 2: Check if the status is being changed
+          } // Step 2: Check if the status is being changed (column movement needed)
           if (updatedTask.status && updatedTask.status !== currentTask.status) {
-            // Status is changing, we need to move the task to a different column
+            // Status is changing - task needs to be moved to a different column
 
-            // Create a new columns array
+            // Create a new columns array for immutable update
             const updatedColumns = [...state.board.columns];
 
-            // Step 3: Remove the task from the source column
+            // Step 3: Remove the task from its source/current column
             updatedColumns[sourceColumnIndex] = {
               ...updatedColumns[sourceColumnIndex],
               tasks: updatedColumns[sourceColumnIndex].tasks.filter(
@@ -178,20 +195,20 @@ export const useKanbanStore = create<KanbanState>()(
               ),
             };
 
-            // Step 4: Add the updated task to the destination column
+            // Step 4: Find the destination column based on the new status
             const destinationColumnIndex = updatedColumns.findIndex(
               (col) => col.status === updatedTask.status
             );
 
             if (destinationColumnIndex !== -1) {
-              // Create the updated task with all new properties
+              // Create the updated task with all new properties and timestamp
               const movedTask: Task = {
                 ...currentTask,
                 ...updatedTask,
-                updatedAt: new Date(),
+                updatedAt: new Date(), // Update timestamp to reflect the change
               };
 
-              // Add to the destination column
+              // Add the updated task to the destination column
               updatedColumns[destinationColumnIndex] = {
                 ...updatedColumns[destinationColumnIndex],
                 tasks: [
@@ -209,9 +226,10 @@ export const useKanbanStore = create<KanbanState>()(
               },
             };
           } else {
-            // No status change, just update the task properties in its current column
+            // No status change - task stays in current column with updated properties
+            // This follows a simpler update path without column movement
             const updatedColumns = state.board.columns.map((column) => {
-              // Try to find the task in this column
+              // Find the task in this column (should only be in one column)
               const taskIndex = column.tasks.findIndex(
                 (task) => task.id === taskId
               );
@@ -274,6 +292,13 @@ export const useKanbanStore = create<KanbanState>()(
 
       /**
        * Moves a task from one column to another
+       *
+       * Note: This function is used primarily for drag-and-drop operations.
+       * For status changes made through the edit dialog, see the updateTask function
+       * which also handles moving tasks between columns when status changes.
+       *
+       * @param taskId - The ID of the task to move
+       * @param destinationStatus - The status representing the destination column
        */
       moveTask: (taskId, destinationStatus) => {
         set((state) => {

@@ -63,11 +63,13 @@ const Column: React.FC<ColumnProps> = ({
             {column.title}
           </h2>
           <div className="flex items-center space-x-2">
+            {/* Column-specific "Add Task" button */}
             {onCreateTask && (
               <button
                 onClick={() => onCreateTask(column.status)}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 title={`Create task in ${column.title}`}
+                aria-label={`Add new task to ${column.title}`}
               >
                 <Plus size={16} />
               </button>
