@@ -19,6 +19,12 @@ interface KanbanState {
   /** The main board containing columns and tasks */
   board: Board;
 
+  /** Current status filter (undefined means no filter) */
+  filterByStatus?: TaskStatus;
+
+  /** Current priority filter (undefined means no filter) */
+  filterByPriority?: TaskPriority;
+
   /**
    * Creates a new task in the specified column
    * @param title - The title of the task
@@ -55,6 +61,29 @@ interface KanbanState {
    * @param destinationStatus - Status representing the destination column
    */
   moveTask: (taskId: string, destinationStatus: TaskStatus) => void;
+
+  /**
+   * Sets the status filter
+   * @param status - Status to filter by, undefined to clear the filter
+   */
+  setFilterStatus: (status?: TaskStatus) => void;
+
+  /**
+   * Sets the priority filter
+   * @param priority - Priority to filter by, undefined to clear the filter
+   */
+  setFilterPriority: (priority?: TaskPriority) => void;
+
+  /**
+   * Clears all filters
+   */
+  clearFilters: () => void;
+
+  /**
+   * Gets tasks filtered by the current filters
+   * @returns A new board with filtered tasks in each column
+   */
+  getFilteredBoard: () => Board;
 }
 
 /**
@@ -96,9 +125,11 @@ const initialBoard: Board = {
 // Create the store with persistence using localStorage
 export const useKanbanStore = create<KanbanState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // ===== STATE =====
       board: initialBoard,
+      filterByStatus: undefined,
+      filterByPriority: undefined,
 
       // ===== ACTIONS =====
 
@@ -360,6 +391,66 @@ export const useKanbanStore = create<KanbanState>()(
             },
           };
         });
+      },
+
+      /**
+       * Sets the status filter
+       * @param status - Status to filter by, undefined to clear the filter
+       */
+      setFilterStatus: (status) => {
+        set(() => ({
+          filterByStatus: status,
+        }));
+      },
+
+      /**
+       * Sets the priority filter
+       * @param priority - Priority to filter by, undefined to clear the filter
+       */
+      setFilterPriority: (priority) => {
+        set(() => ({
+          filterByPriority: priority,
+        }));
+      },
+
+      /**
+       * Clears all filters
+       */
+      clearFilters: () => {
+        set(() => ({
+          filterByStatus: undefined,
+          filterByPriority: undefined,
+        }));
+      },
+
+      /**
+       * Gets tasks filtered by the current filters
+       * @returns A new board with filtered tasks in each column
+       */
+      getFilteredBoard: () => {
+        const { board, filterByStatus, filterByPriority } = get();
+
+        // Filter tasks based on the current filters
+        const filteredColumns = board.columns.map((column) => {
+          const filteredTasks = column.tasks.filter((task) => {
+            const matchesStatus =
+              filterByStatus === undefined || task.status === filterByStatus;
+            const matchesPriority =
+              filterByPriority === undefined ||
+              task.priority === filterByPriority;
+            return matchesStatus && matchesPriority;
+          });
+
+          return {
+            ...column,
+            tasks: filteredTasks,
+          };
+        });
+
+        return {
+          ...board,
+          columns: filteredColumns,
+        };
       },
     }),
     {
