@@ -87,9 +87,10 @@ const FilterBar: React.FC = React.memo(() => {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ANY_STATUS}>Any Status</SelectItem>
-          <SelectItem value={TaskStatus.BACKLOG}>
+          {/* I remove backlog filter as currently no need to implement. */}
+          {/* <SelectItem value={TaskStatus.BACKLOG}>
             {statusNames[TaskStatus.BACKLOG]}
-          </SelectItem>
+          </SelectItem> */}
           <SelectItem value={TaskStatus.TODO}>
             {statusNames[TaskStatus.TODO]}
           </SelectItem>
