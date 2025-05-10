@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useKanbanStore } from "@/store/useKanbanStore";
-import { TaskPriority } from "@/types";
+import { TaskPriority, TaskStatus } from "@/types";
 import type { Task } from "@/types";
 
 /**
@@ -36,6 +36,8 @@ interface CreateTaskDialogProps {
   onOpenChange: (open: boolean) => void;
   /** Optional task to edit (undefined for create mode) */
   taskToEdit?: Task;
+  /** Optional initial column status for new tasks */
+  initialColumnStatus?: string;
 }
 
 /**
@@ -47,6 +49,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
   open,
   onOpenChange,
   taskToEdit,
+  initialColumnStatus,
 }) => {
   // Access task-related actions from the store
   const { createTask, updateTask } = useKanbanStore();
@@ -54,6 +57,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [status, setStatus] = useState<string>(TaskStatus.TODO);
   const [priority, setPriority] = useState<TaskPriority>(TaskPriority.MEDIUM);
   const [dueDate, setDueDate] = useState("");
   const [errors, setErrors] = useState<{ title?: string }>({});
@@ -75,6 +79,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
         taskTitle.shift(); // Remove the first element (TASK-XXX)
         setTitle(taskTitle.join(" "));
         setDescription(taskToEdit.description || "");
+        setStatus(taskToEdit.status);
         setPriority(taskToEdit.priority);
         setDueDate(
           taskToEdit.dueDate
@@ -85,12 +90,13 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
         // Reset form for create mode
         setTitle("");
         setDescription("");
+        setStatus(initialColumnStatus || TaskStatus.TODO);
         setPriority(TaskPriority.MEDIUM);
         setDueDate("");
       }
       setErrors({});
     }
-  }, [taskToEdit, open]);
+  }, [taskToEdit, open, initialColumnStatus]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +111,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
       updateTask(taskToEdit.id, {
         title: `${taskToEdit.title.split(" ")[0]} ${title}`,
         description: description || undefined,
+        status: status as TaskStatus,
         priority,
         dueDate: dueDate ? new Date(dueDate) : undefined,
       });
@@ -112,6 +119,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
       createTask(
         title,
         description || undefined,
+        status as TaskStatus,
         priority,
         dueDate ? new Date(dueDate) : undefined
       );
@@ -168,6 +176,28 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
               placeholder="Enter task description (optional)"
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="status"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Status
+            </label>
+            <Select value={status} onValueChange={(value) => setStatus(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={TaskStatus.BACKLOG}>Backlog</SelectItem>
+                <SelectItem value={TaskStatus.TODO}>To Do</SelectItem>
+                <SelectItem value={TaskStatus.IN_PROGRESS}>
+                  In Progress
+                </SelectItem>
+                <SelectItem value={TaskStatus.DONE}>Done</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

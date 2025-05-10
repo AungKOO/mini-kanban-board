@@ -13,6 +13,7 @@ import {
 import type { Column as ColumnType, Task } from "@/types";
 import TaskCard from "./TaskCard";
 import { cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
 
 /**
  * Props for the Column component
@@ -22,9 +23,15 @@ interface ColumnProps {
   column: ColumnType;
   /** Callback for when a task is edited */
   onEditTask: (task: Task) => void;
+  /** Callback for creating a new task in this column */
+  onCreateTask?: (columnStatus: string) => void;
 }
 
-const Column: React.FC<ColumnProps> = ({ column, onEditTask }) => {
+const Column: React.FC<ColumnProps> = ({
+  column,
+  onEditTask,
+  onCreateTask,
+}) => {
   // Set up droppable functionality for drag and drop
   const { setNodeRef, isOver } = useDroppable({
     id: column.status,
@@ -55,9 +62,20 @@ const Column: React.FC<ColumnProps> = ({ column, onEditTask }) => {
           <h2 className="font-semibold text-gray-700 dark:text-gray-200">
             {column.title}
           </h2>
-          <span className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full text-xs">
-            {column.tasks.length}
-          </span>
+          <div className="flex items-center space-x-2">
+            {onCreateTask && (
+              <button
+                onClick={() => onCreateTask(column.status)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                title={`Create task in ${column.title}`}
+              >
+                <Plus size={16} />
+              </button>
+            )}
+            <span className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full text-xs">
+              {column.tasks.length}
+            </span>
+          </div>
         </div>
       </div>
 

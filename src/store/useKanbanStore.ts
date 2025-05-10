@@ -29,6 +29,7 @@ interface KanbanState {
   createTask: (
     title: string,
     description?: string,
+    status?: TaskStatus,
     priority?: TaskPriority,
     dueDate?: Date
   ) => void;
@@ -97,11 +98,12 @@ export const useKanbanStore = create<KanbanState>()(
       board: initialBoard,
 
       /**
-       * Creates a new task and adds it to the "To Do" column
+       * Creates a new task and adds it to the specified column based on status
        */
       createTask: (
         title,
         description,
+        status = TaskStatus.TODO,
         priority = TaskPriority.MEDIUM,
         dueDate
       ) => {
@@ -111,15 +113,15 @@ export const useKanbanStore = create<KanbanState>()(
             id: uuidv4(),
             title: `${generateTaskCode()} ${title}`,
             description,
-            status: TaskStatus.TODO,
+            status,
             priority,
             createdAt: new Date(),
             ...(dueDate && { dueDate }),
           };
 
-          // Find the TODO column and add the task to it
+          // Find the column that matches the task's status and add the task to it
           const updatedColumns = state.board.columns.map((column) => {
-            if (column.status === TaskStatus.TODO) {
+            if (column.status === status) {
               return {
                 ...column,
                 tasks: [...column.tasks, newTask],
@@ -143,42 +145,107 @@ export const useKanbanStore = create<KanbanState>()(
        */
       updateTask: (taskId, updatedTask) => {
         set((state) => {
-          // Look through all columns to find and update the task
-          const updatedColumns = state.board.columns.map((column) => {
-            // Try to find the task in this column
-            const taskIndex = column.tasks.findIndex(
-              (task) => task.id === taskId
+          // Step 1: Find the task and its current column
+          let currentTask: Task | undefined;
+          let sourceColumnIndex = -1;
+
+          // Look through all columns to find the task
+          state.board.columns.forEach((column, index) => {
+            const task = column.tasks.find((t) => t.id === taskId);
+            if (task) {
+              currentTask = task;
+              sourceColumnIndex = index;
+            }
+          });
+
+          // If task not found, return state unchanged
+          if (!currentTask || sourceColumnIndex === -1) {
+            return state;
+          }
+
+          // Step 2: Check if the status is being changed
+          if (updatedTask.status && updatedTask.status !== currentTask.status) {
+            // Status is changing, we need to move the task to a different column
+
+            // Create a new columns array
+            const updatedColumns = [...state.board.columns];
+
+            // Step 3: Remove the task from the source column
+            updatedColumns[sourceColumnIndex] = {
+              ...updatedColumns[sourceColumnIndex],
+              tasks: updatedColumns[sourceColumnIndex].tasks.filter(
+                (task) => task.id !== taskId
+              ),
+            };
+
+            // Step 4: Add the updated task to the destination column
+            const destinationColumnIndex = updatedColumns.findIndex(
+              (col) => col.status === updatedTask.status
             );
 
-            // If task is found in this column
-            if (taskIndex !== -1) {
-              const updatedTasks = [...column.tasks];
-
-              // Update the task with new properties and updatedAt timestamp
-              updatedTasks[taskIndex] = {
-                ...updatedTasks[taskIndex],
+            if (destinationColumnIndex !== -1) {
+              // Create the updated task with all new properties
+              const movedTask: Task = {
+                ...currentTask,
                 ...updatedTask,
                 updatedAt: new Date(),
               };
 
-              // Return the updated column
-              return {
-                ...column,
-                tasks: updatedTasks,
+              // Add to the destination column
+              updatedColumns[destinationColumnIndex] = {
+                ...updatedColumns[destinationColumnIndex],
+                tasks: [
+                  ...updatedColumns[destinationColumnIndex].tasks,
+                  movedTask,
+                ],
               };
             }
 
-            // Return the column unchanged if task not found
-            return column;
-          });
+            // Return the updated state
+            return {
+              board: {
+                ...state.board,
+                columns: updatedColumns,
+              },
+            };
+          } else {
+            // No status change, just update the task properties in its current column
+            const updatedColumns = state.board.columns.map((column) => {
+              // Try to find the task in this column
+              const taskIndex = column.tasks.findIndex(
+                (task) => task.id === taskId
+              );
 
-          // Return updated board state
-          return {
-            board: {
-              ...state.board,
-              columns: updatedColumns,
-            },
-          };
+              // If task is found in this column
+              if (taskIndex !== -1) {
+                const updatedTasks = [...column.tasks];
+
+                // Update the task with new properties and updatedAt timestamp
+                updatedTasks[taskIndex] = {
+                  ...updatedTasks[taskIndex],
+                  ...updatedTask,
+                  updatedAt: new Date(),
+                };
+
+                // Return the updated column
+                return {
+                  ...column,
+                  tasks: updatedTasks,
+                };
+              }
+
+              // Return the column unchanged if task not found
+              return column;
+            });
+
+            // Return updated board state
+            return {
+              board: {
+                ...state.board,
+                columns: updatedColumns,
+              },
+            };
+          }
         });
       },
 

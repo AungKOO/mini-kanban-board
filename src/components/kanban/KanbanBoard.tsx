@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useKanbanStore } from "@/store/useKanbanStore";
 import type { Task } from "@/types";
+import { TaskStatus } from "@/types";
 import Column from "./Column";
 import TaskCard from "./TaskCard";
 import CreateTaskDialog from "./CreateTaskDialog";
@@ -27,6 +28,9 @@ const KanbanBoard: React.FC = () => {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
+  const [currentColumnStatus, setCurrentColumnStatus] = useState<string>(
+    TaskStatus.TODO
+  );
 
   // Check if there's an issue with board data
   const hasBoardDataIssue = !board?.columns || !Array.isArray(board.columns);
@@ -139,6 +143,14 @@ const KanbanBoard: React.FC = () => {
     setCreateDialogOpen(true);
   };
 
+  const handleCreateTaskInColumn = (columnStatus: string) => {
+    setTaskToEdit(undefined);
+    setCreateDialogOpen(true);
+    // Store the column status where the task should be created
+    // This will be passed to CreateTaskDialog
+    setCurrentColumnStatus(columnStatus);
+  };
+
   // Function to clear localStorage and reload
   const resetBoardData = () => {
     localStorage.removeItem("kanban-storage");
@@ -158,6 +170,7 @@ const KanbanBoard: React.FC = () => {
           <Button
             onClick={() => {
               setTaskToEdit(undefined);
+              setCurrentColumnStatus(TaskStatus.TODO);
               setCreateDialogOpen(true);
             }}
           >
@@ -181,6 +194,7 @@ const KanbanBoard: React.FC = () => {
                   key={column.id}
                   column={column}
                   onEditTask={handleEditTask}
+                  onCreateTask={handleCreateTaskInColumn}
                 />
               ))
             ) : (
@@ -205,6 +219,7 @@ const KanbanBoard: React.FC = () => {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         taskToEdit={taskToEdit}
+        initialColumnStatus={currentColumnStatus}
       />
     </div>
   );
