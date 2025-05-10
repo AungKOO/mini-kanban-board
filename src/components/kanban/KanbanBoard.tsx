@@ -21,10 +21,11 @@ import { TaskStatus } from "@/types";
 import Column from "./Column";
 import TaskCard from "./TaskCard";
 import CreateTaskDialog from "./CreateTaskDialog";
+import FilterBar from "./FilterBar";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 
 const KanbanBoard: React.FC = () => {
-  const { board, moveTask, updateTask } = useKanbanStore();
+  const { board, moveTask, updateTask, getFilteredBoard } = useKanbanStore();
   const [activeTask, setActiveTask] = useState<Task | null>(null); // For drag overlay
   const [createDialogOpen, setCreateDialogOpen] = useState(false); // Controls dialog visibility
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined); // For edit mode
@@ -32,6 +33,9 @@ const KanbanBoard: React.FC = () => {
   const [currentColumnStatus, setCurrentColumnStatus] = useState<string>(
     TaskStatus.TODO
   );
+
+  // Get the filtered board data based on current filters
+  const filteredBoard = getFilteredBoard();
 
   // Check if there's an issue with board data
   const hasBoardDataIssue = !board?.columns || !Array.isArray(board.columns);
@@ -187,6 +191,11 @@ const KanbanBoard: React.FC = () => {
         </div>
       </div>
 
+      {/* Filter bar for filtering tasks */}
+      <div className="px-2">
+        <FilterBar />
+      </div>
+
       <div className="flex-1 overflow-x-auto">
         <DndContext
           sensors={sensors}
@@ -196,15 +205,31 @@ const KanbanBoard: React.FC = () => {
           modifiers={[restrictToWindowEdges]}
         >
           <div className="flex gap-4 p-4">
-            {board && board.columns && Array.isArray(board.columns) ? (
-              board.columns.map((column) => (
-                <Column
-                  key={column.id}
-                  column={column}
-                  onEditTask={handleEditTask}
-                  onCreateTask={handleCreateTaskInColumn} // Enables "+" button in column header
-                />
-              ))
+            {filteredBoard &&
+            filteredBoard.columns &&
+            Array.isArray(filteredBoard.columns) ? (
+              <>
+                {filteredBoard.columns.map((column) => (
+                  <Column
+                    key={column.id}
+                    column={column}
+                    onEditTask={handleEditTask}
+                    onCreateTask={handleCreateTaskInColumn} // Enables "+" button in column header
+                  />
+                ))}
+
+                {/* Show message when no tasks match the filters */}
+                {filteredBoard.columns.every(
+                  (col) => col.tasks.length === 0
+                ) && (
+                  <div className="w-full text-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+                    <p>No tasks match the current filters.</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Try adjusting your filters or create new tasks.
+                    </p>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="w-full text-center p-8">
                 Loading board data...
