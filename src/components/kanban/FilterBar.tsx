@@ -65,10 +65,12 @@ const FilterBar: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-4 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
-      <div className="flex items-center gap-1 mr-2">
-        <Filter size={18} className="text-gray-500" />
-        <span className="text-sm font-medium">Filters:</span>
+    <div className="flex flex-wrap items-center gap-3 mb-6 p-3 bg-background border border-border/40 rounded-lg">
+      <div className="flex items-center gap-2 mr-1">
+        <Filter size={16} className="text-muted-foreground" />
+        <span className="text-sm font-medium text-muted-foreground">
+          Filters
+        </span>
       </div>
 
       {/* Status filter */}
@@ -81,7 +83,7 @@ const FilterBar: React.FC = () => {
           );
         }}
       >
-        <SelectTrigger className="w-[140px]">
+        <SelectTrigger className="w-[130px] h-9 text-sm">
           <SelectValue placeholder="Status: Any" />
         </SelectTrigger>
         <SelectContent>
@@ -111,7 +113,7 @@ const FilterBar: React.FC = () => {
           );
         }}
       >
-        <SelectTrigger className="w-[140px]">
+        <SelectTrigger className="w-[130px] h-9 text-sm">
           <SelectValue placeholder="Priority: Any" />
         </SelectTrigger>
         <SelectContent>
@@ -130,16 +132,21 @@ const FilterBar: React.FC = () => {
 
       {/* Task count */}
       <div className="ml-auto flex items-center">
-        <span className="text-sm text-gray-500">
-          {taskCount} {taskCount === 1 ? "task" : "tasks"} found
+        <span className="text-sm text-muted-foreground">
+          {taskCount} {taskCount === 1 ? "task" : "tasks"}
         </span>
       </div>
 
       {/* Clear filters button, only shown when filters are active */}
       {hasActiveFilters && (
-        <Button variant="outline" size="sm" onClick={clearFilters}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={clearFilters}
+          className="h-8 ml-2 text-xs"
+        >
           <X size={14} className="mr-1" />
-          Clear Filters
+          Clear
         </Button>
       )}
     </div>
