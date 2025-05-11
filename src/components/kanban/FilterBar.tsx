@@ -82,7 +82,7 @@ const FilterBar: React.FC = React.memo(() => {
           );
         }}
       >
-        <SelectTrigger className="w-[130px] h-9 text-sm">
+        <SelectTrigger className="w-[120px] sm:w-[130px] h-9 text-sm">
           <SelectValue placeholder="Status: Any" />
         </SelectTrigger>
         <SelectContent>
@@ -113,7 +113,7 @@ const FilterBar: React.FC = React.memo(() => {
           );
         }}
       >
-        <SelectTrigger className="w-[130px] h-9 text-sm">
+        <SelectTrigger className="w-[120px] sm:w-[130px] h-9 text-sm">
           <SelectValue placeholder="Priority: Any" />
         </SelectTrigger>
         <SelectContent>
@@ -143,10 +143,10 @@ const FilterBar: React.FC = React.memo(() => {
           variant="outline"
           size="sm"
           onClick={clearFilters}
-          className="h-8 ml-2 text-xs"
+          className="h-8 ml-2 text-xs whitespace-nowrap"
         >
           <X size={14} className="mr-1" />
-          Clear
+          <span className="hidden sm:inline">Clear</span>
         </Button>
       )}
     </div>
