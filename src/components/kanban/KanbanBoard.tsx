@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -57,110 +57,116 @@ const KanbanBoard: React.FC = () => {
     })
   );
 
-  // Event handlers for drag and drop
-  const handleDragStart = (event: DragStartEvent) => {
+  // Event handlers for drag and drop - memoized to prevent recreation on each render
+  const handleDragStart = useCallback((event: DragStartEvent) => {
     const { active } = event;
     const activeData = active.data.current;
 
     if (activeData?.type === "Task") {
       setActiveTask(activeData.task);
     }
-  };
+  }, []);
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
 
-    if (!over) return;
+      if (!over) return;
 
-    const activeId = active.id;
-    const overId = over.id;
+      const activeId = active.id;
+      const overId = over.id;
 
-    // Return if there's no change
-    if (activeId === overId) return;
+      // Return if there's no change
+      if (activeId === overId) return;
 
-    const activeData = active.data.current;
-    const overData = over.data.current;
+      const activeData = active.data.current;
+      const overData = over.data.current;
 
-    // Task over column
-    if (activeData?.type === "Task" && overData?.type === "Column") {
-      const task = activeData.task as Task;
-      const destinationStatus = overData.column.status;
+      // Task over column
+      if (activeData?.type === "Task" && overData?.type === "Column") {
+        const task = activeData.task as Task;
+        const destinationStatus = overData.column.status;
 
-      // Only move if the status is different
-      if (task.status !== destinationStatus) {
-        moveTask(task.id, destinationStatus);
+        // Only move if the status is different
+        if (task.status !== destinationStatus) {
+          moveTask(task.id, destinationStatus);
+        }
       }
-    }
-  };
+    },
+    [moveTask]
+  );
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
 
-    if (!over) {
-      setActiveTask(null);
-      return;
-    }
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    // Return if no change
-    if (activeId === overId) {
-      setActiveTask(null);
-      return;
-    }
-
-    const activeData = active.data.current;
-    const overData = over.data.current;
-
-    // Task over task (reordering)
-    if (
-      activeData?.type === "Task" &&
-      overData?.type === "Task" &&
-      activeData.task.status === overData.task.status
-    ) {
-      // Find the column containing these tasks
-      const column = board.columns.find(
-        (col) => col.status === activeData.task.status
-      );
-
-      if (column) {
-        // Get the task indices
-        const oldIndex = column.tasks.findIndex((t) => t.id === activeId);
-        const newIndex = column.tasks.findIndex((t) => t.id === overId);
-
-        // Reorder tasks in the column
-        const newTasks = arrayMove(column.tasks, oldIndex, newIndex);
-
-        // Update tasks with new order (we'd need to add ordering logic to our state)
-        // This is a simplified approach, you might want to use an order field in your tasks
-        newTasks.forEach((task, index) => {
-          updateTask(task.id, { updatedAt: new Date(Date.now() + index) });
-        });
+      if (!over) {
+        setActiveTask(null);
+        return;
       }
-    }
 
-    setActiveTask(null);
-  };
+      const activeId = active.id;
+      const overId = over.id;
+
+      // Return if no change
+      if (activeId === overId) {
+        setActiveTask(null);
+        return;
+      }
+
+      const activeData = active.data.current;
+      const overData = over.data.current;
+
+      // Task over task (reordering)
+      if (
+        activeData?.type === "Task" &&
+        overData?.type === "Task" &&
+        activeData.task.status === overData.task.status
+      ) {
+        // Find the column containing these tasks
+        const column = board.columns.find(
+          (col) => col.status === activeData.task.status
+        );
+
+        if (column) {
+          // Get the task indices
+          const oldIndex = column.tasks.findIndex((t) => t.id === activeId);
+          const newIndex = column.tasks.findIndex((t) => t.id === overId);
+
+          // Reorder tasks in the column
+          const newTasks = arrayMove(column.tasks, oldIndex, newIndex);
+
+          // Update tasks with new order (we'd need to add ordering logic to our state)
+          // This is a simplified approach, you might want to use an order field in your tasks
+          newTasks.forEach((task, index) => {
+            updateTask(task.id, { updatedAt: new Date(Date.now() + index) });
+          });
+        }
+      }
+
+      setActiveTask(null);
+    },
+    [board, updateTask, setActiveTask]
+  );
   /**
    * Opens the edit dialog for an existing task
    * @param task - The task to edit
    */
-  const handleEditTask = (task: Task) => {
+  const handleEditTask = useCallback((task: Task) => {
     setTaskToEdit(task);
     setCreateDialogOpen(true);
-  };
+  }, []);
 
   /**
    * Opens the create task dialog for a specific column
    * This is triggered when clicking the "+" button in a column header
    * @param columnStatus - The status/column where the new task should be created
    */
-  const handleCreateTaskInColumn = (columnStatus: string) => {
+  const handleCreateTaskInColumn = useCallback((columnStatus: string) => {
     setTaskToEdit(undefined); // Not in edit mode
     setCurrentColumnStatus(columnStatus); // Set the target column
     setCreateDialogOpen(true); // Open the dialog
-  };
+  }, []);
 
   // Function to clear localStorage and reload
   const resetBoardData = () => {

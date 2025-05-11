@@ -224,7 +224,8 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={TaskStatus.BACKLOG}>Backlog</SelectItem>
+                {/* TODO:: I will add backlog later as there is no need currently right now. */}
+                {/* <SelectItem value={TaskStatus.BACKLOG}>Backlog</SelectItem>  */}
                 <SelectItem value={TaskStatus.TODO}>To Do</SelectItem>
                 <SelectItem value={TaskStatus.IN_PROGRESS}>
                   In Progress
