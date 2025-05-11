@@ -1,54 +1,114 @@
-# React + TypeScript + Vite
+# Mini Kanban Board
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A lightweight yet powerful Kanban board application for task management with drag-and-drop capabilities, filtering, and task prioritization.
 
-Currently, two official plugins are available:
+**Live Demo:** [https://mini-kanban-board.vercel.app/](https://mini-kanban-board.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+![Mini Kanban Board](public/mini-kanban.png)
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+This project is built with modern web technologies:
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- **Framework**: [React 19](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool**: [Vite 6](https://vitejs.dev/)
+- **Styling**: [TailwindCSS 4](https://tailwindcss.com/)
+- **UI Components**: Custom components with [Radix UI](https://www.radix-ui.com/) primitives, [shadcn/ui](https://ui.shadcn.com/)
+- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/) with persistence
+- **Drag and Drop**: [dnd-kit](https://dndkit.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Utilities**:
+  - UUID for unique IDs
+  - clsx & tailwind-merge for class management
+  - class-variance-authority for component variants
+
+## Features Implemented
+
+- **Drag and Drop Interface**: Intuitive drag-and-drop functionality for moving tasks between columns
+- **Task Management**:
+  - Create, edit, and delete tasks
+  - Set task priorities (Low, Medium, High)
+  - Add task descriptions and due dates
+  - JIRA-like task code generation
+- **Column Organization**:
+  - Standard workflow columns (Backlog (currently comment out), Todo, In Progress, Done)
+  - Visual indicators for task status
+- **Filtering**:
+  - Filter tasks by status
+  - Filter tasks by priority level
+  - Clear filters functionality
+- **Persistence**: Task data is saved to local storage
+- **Responsive Design**: Works on desktop and mobile devices
+- **Accessibility**: Built with accessible UI components
+
+## Assumptions Made
+
+- **Single User Focus**: The application is designed for individual use rather than team collaboration
+- **Local Storage**: All data is stored locally in the browser with no backend server
+- **Task Structure**: Tasks include essential fields like title, description, status, priority, and dates
+- **Workflow**: Standard Kanban workflow with three columns (Todo, In Progress, Done)
+- **Modern Browser Support**: Targets modern browsers with ES6+ support
+
+## Running the Project
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn or pnpm
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yourusername/mini-kanban-board.git
+   cd mini-kanban-board
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   # or
+   yarn
+   # or
+   pnpm install
+   ```
+
+3. Start the development server:
+
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   ```
+
+4. Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+### Build for Production
+
+```bash
+npm run build
+# or
+yarn build
+# or
+pnpm build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Preview Production Build
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+npm run preview
+# or
+yarn preview
+# or
+pnpm preview
+```
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+## License
+
+```
+
 ```
