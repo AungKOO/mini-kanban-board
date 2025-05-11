@@ -175,13 +175,18 @@ const KanbanBoard: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center mb-4 p-2">
+    <div className="flex flex-col h-full overscroll-none">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-4 p-2">
         <h1 className="text-xl font-bold">Kanban Board</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {hasBoardDataIssue && (
-            <Button onClick={resetBoardData} variant="destructive">
-              Reset Board Data
+            <Button
+              onClick={resetBoardData}
+              variant="destructive"
+              size="sm"
+              className="whitespace-nowrap"
+            >
+              Reset Data
             </Button>
           )}
           {/* Main "Add Task" button - creates tasks in the To Do column by default */}
@@ -191,8 +196,10 @@ const KanbanBoard: React.FC = () => {
               setCurrentColumnStatus(TaskStatus.TODO); // Default to TODO column
               setCreateDialogOpen(true); // Open the task creation dialog
             }}
+            size="sm"
+            className="whitespace-nowrap"
           >
-            <Plus className="mr-1" /> Add Task
+            <Plus className="mr-1 h-4 w-4" /> Add Task
           </Button>
         </div>
       </div>
@@ -210,7 +217,7 @@ const KanbanBoard: React.FC = () => {
           onDragEnd={handleDragEnd}
           modifiers={[restrictToWindowEdges]}
         >
-          <div className="flex gap-4 p-4">
+          <div className="flex flex-col md:flex-row gap-4 p-4">
             {filteredBoard &&
             filteredBoard.columns &&
             Array.isArray(filteredBoard.columns) ? (
@@ -228,9 +235,9 @@ const KanbanBoard: React.FC = () => {
                 {filteredBoard.columns.every(
                   (col) => col.tasks.length === 0
                 ) && (
-                  <div className="w-full text-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+                  <div className="w-full text-center p-4 sm:p-8 bg-gray-50 dark:bg-gray-800/50 rounded-md">
                     <p>No tasks match the current filters.</p>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-2">
                       Try adjusting your filters or create new tasks.
                     </p>
                   </div>
@@ -246,7 +253,7 @@ const KanbanBoard: React.FC = () => {
           {/* Drag overlay - shows the task being dragged */}
           <DragOverlay>
             {activeTask && (
-              <div className="w-80">
+              <div className="w-full md:w-80">
                 <TaskCard task={activeTask} onEdit={() => {}} />
               </div>
             )}

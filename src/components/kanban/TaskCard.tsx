@@ -115,17 +115,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
       style={style}
       className={`mb-2 ${isDragging ? "opacity-50" : ""} ${
         isDone ? "bg-gray-100 dark:bg-gray-800/50" : "bg-white dark:bg-gray-800"
-      }`}
+      } touch-manipulation`}
       {...attributes}
       {...listeners}
     >
-      <CardHeader className="p-3 pb-0 flex flex-row items-start justify-between">
-        <div>
+      <CardHeader className="px-3 pb-0 flex flex-row items-start justify-between">
+        <div className="flex-1 overflow-hidden">
           <div className="text-xs font-mono text-gray-500 dark:text-gray-400">
             {taskCode}
           </div>
           <h3
-            className={`font-medium ${
+            className={`font-medium truncate ${
               isDone ? "line-through text-gray-500 dark:text-gray-400" : ""
             }`}
           >
@@ -135,21 +135,24 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
         {/* Actions dropdown menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
               <MoreVertical className="size-4" />
               <span className="sr-only">Open menu</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="min-w-[140px]">
             {/* Edit action */}
-            <DropdownMenuItem onClick={() => onEdit(task)}>
+            <DropdownMenuItem
+              onClick={() => onEdit(task)}
+              className="cursor-pointer py-2"
+            >
               <Pencil className="mr-2 size-4" />
               Edit
             </DropdownMenuItem>
             {/* Delete action with warning color */}
             <DropdownMenuItem
               onClick={() => deleteTask(task.id)}
-              className="text-red-600 dark:text-red-400"
+              className="text-red-600 dark:text-red-400 cursor-pointer py-2"
             >
               <Trash2 className="mr-2 size-4" />
               Delete
@@ -161,17 +164,18 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
       <CardContent className="p-3">
         {task.description && (
           <p
-            className={`text-sm text-gray-600 dark:text-gray-300 ${
+            className={`text-sm text-gray-600 dark:text-gray-300 break-words ${
               isDone ? "line-through text-gray-500 dark:text-gray-400" : ""
             }`}
           >
-            {task.description}
+            {/* Display limited text on very small screens */}
+            <span className="line-clamp-3">{task.description}</span>
           </p>
         )}
       </CardContent>
 
       {/* Card footer with priority badge and due date */}
-      <CardFooter className="px-3 py-2 flex justify-between items-center">
+      <CardFooter className="px-3 py-2 flex flex-wrap justify-between items-center gap-2">
         {/* Priority badge with color-coding */}
         <span
           className={`text-xs px-2 py-1 rounded-full ${getPriorityBadge(
@@ -183,7 +187,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit }) => {
 
         {/* Due date (if present) */}
         {task.dueDate && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
             Due {formatDate(task.dueDate)}
           </span>
         )}

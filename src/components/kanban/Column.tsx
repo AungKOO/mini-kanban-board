@@ -55,14 +55,14 @@ const Column: React.FC<ColumnProps> = ({
   });
 
   return (
-    <div className="w-80 flex-shrink-0 flex flex-col">
+    <div className="w-full md:w-80 flex-shrink-0 flex flex-col mb-4 md:mb-0">
       {/* Column header */}
       <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-t-md">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-gray-700 dark:text-gray-200">
+          <h2 className="font-semibold text-gray-700 dark:text-gray-200 truncate mr-2">
             {column.title}
           </h2>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             {/* Column-specific "Add Task" button */}
             {onCreateTask && (
               <button
@@ -103,7 +103,7 @@ const Column: React.FC<ColumnProps> = ({
 
         {/* Empty state - displayed when there are no tasks */}
         {(!column.tasks || column.tasks.length === 0) && (
-          <div className="text-center p-4 text-gray-400 dark:text-gray-500 text-sm italic">
+          <div className="text-center p-2 sm:p-4 text-gray-400 dark:text-gray-500 text-xs sm:text-sm italic min-h-[50px] flex items-center justify-center">
             No tasks in this column
           </div>
         )}
